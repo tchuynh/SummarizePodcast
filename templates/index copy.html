@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YouTube Transcriber</title>
+</head>
+<body>
+    <h1>YouTube Video Transcriber</h1>
+    <input type="text" id="videoUrl" placeholder="Enter YouTube URL">
+    <button onclick="getTranscript()">Transcribe</button>
+    <pre id="transcriptOutput"></pre>
+
+    <script>
+        async function getTranscript() {
+            const url = document.getElementById('videoUrl').value;
+            const response = await fetch('/transcribe', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({url})
+            });
+            const data = await response.json();
+            if (data.transcript) {
+                document.getElementById('transcriptOutput').textContent = JSON.stringify(data.transcript, null, 2);
+            } else {
+                document.getElementById('transcriptOutput').textContent = data.error;
+            }
+        }
+    </script>
+</body>
+</html>
+

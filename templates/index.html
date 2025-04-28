@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Podcast Summarizer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            margin: 40px;
+        }
+        .output-box {
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 8px;
+            min-height: 200px;
+            margin-top: 20px;
+        }
+        #transcriptOutput {
+            white-space: pre-wrap;
+        }
+        #summaryOutput {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: white !important;
+            color: #333;
+        }
+        .markdown-body {
+            background-color: white !important;
+            padding: 20px;
+            border-radius: 8px;
+            color: #333;
+        }
+        .markdown-body h1, 
+        .markdown-body h2, 
+        .markdown-body h3, 
+        .markdown-body h4, 
+        .markdown-body h5, 
+        .markdown-body h6 {
+            color: #333;
+        }
+        .markdown-body p {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h2>YouTube Podcast Summarizer</h2>
+    <input type="text" id="videoUrl" placeholder="Enter YouTube Video URL" style="width: 80%;">
+    <button onclick="getTranscript()">Get Transcript and Summary</button>
+
+    <div id="summaryOutput" class="output-box markdown-body">Summary will appear here...</div>
+    <div id="transcriptOutput" class="output-box">Transcript will appear here...</div>
+
+    <script>
+        async function getTranscript() {
+            const url = document.getElementById('videoUrl').value;
+            const transcriptOutput = document.getElementById('transcriptOutput');
+            const summaryOutput = document.getElementById('summaryOutput');
+            
+            transcriptOutput.textContent = "Loading transcript...";
+            summaryOutput.innerHTML = "Loading summary...";
+            
+            try {
+                const response = await fetch('/transcribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url })
+                });
+                const data = await response.json();
+                if (data.transcript) {
+                    transcriptOutput.textContent = data.transcript;
+                    summaryOutput.innerHTML = marked.parse(data.summary || "Summary not available");
+                } else {
+                    transcriptOutput.textContent = "Error: " + data.error;
+                    summaryOutput.innerHTML = "Error: " + data.error;
+                }
+            } catch (error) {
+                transcriptOutput.textContent = "An error occurred: " + error.message;
+                summaryOutput.innerHTML = "An error occurred: " + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
