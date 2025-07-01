@@ -1,8 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KTNP9QJQ0Z"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-KTNP9QJQ0Z');
+  </script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="description" content="Paste any YouTube link and get a transcript plus an AI-generated summary. Instantly save time on podcasts, lectures, and videos.">
+  <meta name="keywords" content="YouTube transcript, YouTube summary, AI YouTube summarizer, podcast transcript, video summary, AI summarizer">
   <title>AI YouTube Summarizer</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -487,7 +498,130 @@
         justify-content: center;
       }
     }
+    .summary-keypoints-label {
+      margin: 0.8em 0 0.2em 0;
+      font-size: 1.12em;
+      color: #222;
+      font-weight: 600;
+    }
+    .summary-points-card {
+      background: #eef2ff;
+      border-radius: 0.8em;
+      margin: 0.4em 0;
+      padding: 1em 1.2em;
+      box-shadow: 0 2px 8px #7b92ff22;
+      font-weight: 500;
+      color: #2b3487;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.7em;
+    }
+    .summary-points-card::before {
+      content: "★";
+      color: #4f46e5;
+      font-size: 1.13em;
+      margin-top: 0.03em;
+      flex-shrink: 0;
+    }
+    .summary-intro {
+      font-size: 1.10em;
+      color: #374151;
+      margin-bottom: 0.85em;
+      background: #f3f4f6;
+      padding: 0.85em 1.2em;
+      border-radius: 0.7em;
+      font-style: italic;
+    }
+    .summary-outro {
+      font-size: 1.03em;
+      color: #2d3748;
+      border-left: 3px solid #dbeafe;
+      background: #f9fafb;
+      margin-top: 0.85em;
+      padding: 0.85em 1.2em;
+      border-radius: 0.7em;
+      font-style: italic;
+    }
 
+    .header-row-flex {
+      width: 100%;
+      padding: 1.2em 0 1.3em 0;
+      background: var(--header-bg, #f9faff);
+      box-shadow: 0 2px 8px 0 rgba(20,20,80,.03);
+    }
+
+    .header-top-row, .header-search-row {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .url-input {
+      border-radius: 2em;
+      border: 1.5px solid #e3e7ee;
+      outline: none;
+      background: #fff;
+      box-shadow: 0 1px 6px 0 rgba(80,80,120,.06);
+    }
+    .main-content-row {
+      display: flex;
+      align-items: stretch;
+      gap: 2.5em;
+      margin-top: 2.5em;
+    }
+    .main-left,
+    .main-right {
+      flex: 1 1 0;
+      min-width: 350px;
+      display: flex;
+      flex-direction: column;
+    }
+    .summary-block,
+    .transcript-block {
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 600px;  /* Adjust as needed for your content */
+    }
+    .container {
+      display: flex;
+      gap: 2.5em;
+      align-items: stretch;
+      margin-top: 2.5em;
+    }
+    .card {
+      background: #fff;
+      border-radius: 1.5em;
+      box-shadow: 0 1.5px 12px 0 rgba(70,70,120,.07);
+      padding: 1.8em 2em;
+      margin-bottom: 0.6em;
+      display: flex;
+      flex-direction: column;
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.2em;
+    }
+    .video-wrapper {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      background: #000;
+      border-radius: 1.2em;
+      overflow: hidden;
+    }
+    iframe#ytEmbed {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 1.2em;
+      min-height: 220px;
+    }
+    .transcript-section,
+    .summary-body {
+      font-size: 1.09em;
+    }
 
 
 
@@ -495,38 +629,45 @@
 </head>
 <body>
   <header>
-    <div class="header-row-flex">
-      <div class="logo-and-brand">
-        <span class="logo-svg">
-          <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="18" fill="#4f46e5"/>
-            <polygon points="16,13 28,20 16,27" fill="#fff"/>
-            <circle cx="31" cy="9" r="2" fill="#fbbf24"/>
-            <circle cx="8" cy="29" r="1.4" fill="#38bdf8"/>
-          </svg>
-        </span>
-        <span class="brand-text">AI YouTube Summarizer</span>
+    <div class="header-row-flex" style="flex-direction:column; gap:0.4em;">
+      <!-- First Row: logo/brand left, actions right -->
+      <div class="header-top-row" style="display:flex; align-items:center; justify-content:space-between; width:100%; max-width:1200px; margin:0 auto;">
+        <div class="logo-and-brand" style="display:flex; align-items:center;">
+          <span class="logo-svg">
+            <!-- SVG logo here -->
+          </span>
+          <span class="brand-text" style="margin-left: 0.7em; font-size:1.7em; font-weight:600;">AI YouTube Summarizer</span>
+        </div>
+        <div class="header-actions" style="display:flex; align-items:center; gap:0.9em;">
+          <a href="/blog" class="btn btn-outline blog-btn">Blog</a>
+          <button class="btn btn-outline login-btn">Login</button>
+          <button class="btn btn-filled signup-btn">Sign Up</button>
+        </div>
       </div>
-      <div class="search-bar">
-        <input id="videoUrl" class="url-input" value="https://www.youtube.com/watch?v=FASMejN_5gs" placeholder="Paste YouTube URL here..." />
-        <button id="fetchBtn" class="btn">Summarize</button>
-        <button class="btn btn-outline login-btn">Login</button>
-        <button class="btn btn-filled signup-btn">Sign Up</button>
+      <!-- Second Row: Search bar centered -->
+      <div class="header-search-row" style="display:flex; align-items:center; justify-content:center; width:100%; margin-top:1.3em;">
+        <input id="videoUrl" class="url-input"
+               value="https://www.youtube.com/watch?v=FASMejN_5gs"
+               placeholder="Paste YouTube URL here..."
+               style="min-width: 480px; max-width: 700px; width: 50vw; font-size:1.18em; padding: 0.9em 1em;" />
+        <button id="fetchBtn" class="btn" style="margin-left:0.8em; font-size:1.1em; padding: 0.7em 2em;">Summarize</button>
       </div>
     </div>
   </header>
   
+
   
-  
-  <div class="container">
+
+  <div class="main-content-row" style="display: flex; align-items: stretch; gap: 2.5em;">
     <!-- Left: Video + Transcript -->
-    <div style="display:flex; flex-direction:column; gap:1.7rem;">
-      <div class="card">
+    <div class="main-left" style="flex:1 1 0; min-width:350px; display:flex; flex-direction:column;">
+      <div class="card" style="margin-bottom:1.5em;">
         <div class="video-wrapper">
           <iframe id="ytEmbed" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
         </div>
       </div>
-      <div class="card" style="flex:1;">
+      <div class="card transcript-block" style="flex:1 1 0; display:flex; flex-direction:column;">
+        <!-- Transcript header + content -->
         <div class="header-row">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <h2>Transcript</h2>
@@ -537,25 +678,30 @@
             <button id="downloadTranscriptBtn" class="btn btn-download">Download</button>
           </div>
         </div>
-        <div id="transcriptOutput" class="transcript-section">
+        <div id="transcriptOutput" class="transcript-section" style="overflow-y:auto;">
           Transcript will appear here...
         </div>
       </div>
     </div>
     <!-- Right: Summary -->
-    <div class="card" style="min-height:550px;">
-      <div class="header-row">
-        <h2>Summary</h2>
-        <div>
-          <button id="copySummaryBtn" class="btn btn-copy">Copy</button>
-          <button id="downloadSummaryBtn" class="btn btn-download">Download</button>
+    <div class="main-right" style="flex:1 1 0; min-width:350px; display:flex; flex-direction:column;">
+      <div class="card summary-block" style="flex:1 1 0; display:flex; flex-direction:column; height:100%;">
+        <div class="header-row">
+          <h2>Summary</h2>
+          <div>
+            <button id="copySummaryBtn" class="btn btn-copy">Copy</button>
+            <button id="downloadSummaryBtn" class="btn btn-download">Download</button>
+          </div>
         </div>
-      </div>
-      <div id="summaryOutput" class="summary-body markdown-body" style="max-height:620px; overflow-y:auto;">
-        Summary will appear here...
+        <div id="summaryOutput" class="summary-body markdown-body" style="overflow-y:auto; flex:1;">
+          Summary will appear here...
+        </div>
       </div>
     </div>
   </div>
+  
+  
+
 
   <script>
     const fetchBtn = document.getElementById('fetchBtn');
@@ -681,37 +827,62 @@
     }
 
     function renderSummary(summary) {
-        let md = typeof summary === 'string' ? summary : '';
+      let md = typeof summary === 'string' ? summary : '';
+      const lines = md.split(/\r?\n/).filter(line => line.trim() !== '');
 
-        // 1. Bold "Key points covered include:"
-        md = md.replace(/(Key points covered include:)/i, '<strong style="font-size:1.08em;">$1</strong>');
+      // This will catch: - point, * point, 1. point, 1) point, and even "• point"
+      const pointRegex = /^(\d+\.|\d+\)|[-*•])\s*/;
 
-        // Split by newlines
-        const lines = md.split('\n').filter(line => line.trim() !== '');
+      let html = '';
+      let intro = '', outro = '', points = [];
+      let inPoints = false;
 
-        let html = '';
-        lines.forEach((line, idx) => {
-          // First paragraph = intro
-          if (idx === 0) {
-            html += `<div class="summary-intro">${line}</div>\n`;
-          }
-          // Key points in cards
-          else if (/^[-*]\s+/.test(line)) {
-            const text = line.replace(/^[-*]\s+/, '');
-            html += `<div class="summary-points-card">${text}</div>\n`;
-          }
-          // Last paragraph = outro/conclusion
-          else if (idx === lines.length - 1) {
-            html += `<div class="summary-outro">${line}</div>\n`;
-          }
-          // Otherwise normal text
-          else {
-            html += `<div class="summary-normal-line">${line}</div>\n`;
-          }
-        });
+      lines.forEach((line, idx) => {
+        if (pointRegex.test(line)) {
+          inPoints = true;
+          let text = line.replace(pointRegex, '').trim();
 
-        sumOut.innerHTML = html;
+          // Remove all Markdown bold/italic markers anywhere
+          text = text.replace(/[\*_]{2,}/g, '').replace(/^\*+|\*+$/g, '').trim();
+
+          // Remove if just a "header" (like "Effective Study Strategies:")
+          if (/^([\w\s\-]+):\s*$/i.test(text)) return;
+
+          // Remove trailing ":" at the end, and condense whitespace
+          text = text.replace(/[\:]+$/g, '').replace(/\s+/g, ' ').trim();
+
+          // Only add non-empty points
+          if (text.length > 0) points.push(text);
+        } else if (!inPoints) {
+          intro += line + ' ';
+        } else {
+          outro += line + ' ';
+        }
+      });
+
+      // Intro
+      if (intro.trim()) {
+        html += `<div class="summary-intro">${intro.trim()}</div>\n`;
       }
+
+      // Key points
+      if (points.length) {
+        html += `<div class="summary-keypoints-label"><b>Key points covered include:</b></div>\n`;
+        points.forEach(pt => {
+          html += `<div class="summary-points-card">${pt}</div>\n`;
+        });
+      }
+
+      // Outro
+      if (outro.trim()) {
+        html += `<div class="summary-outro">${outro.trim()}</div>\n`;
+      }
+
+      sumOut.innerHTML = html;
+    }
+
+
+
 
 
 
@@ -793,6 +964,32 @@
 
     copySum.onclick = () => navigator.clipboard.writeText(summaryAsText());
     copyTr.onclick = () => navigator.clipboard.writeText(transcriptAsText());
+
+
+
+    // Attach events to your buttons
+    document.querySelector('.login-btn').onclick = function() { window.location = '/login'; }
+    document.querySelector('.signup-btn').onclick = function() { window.location = '/signup'; }
+
+
+
+
   </script>
+
+    <!-- Modal Overlay -->
+  <div id="authModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <button class="close-modal" onclick="closeModal()">&times;</button>
+      <h2 id="modalTitle">Login</h2>
+      <form id="authForm" onsubmit="return false;">
+        <input type="email" placeholder="Email" required style="margin-bottom: 1em;"/>
+        <input type="password" placeholder="Password" required style="margin-bottom: 1em;"/>
+        <button type="submit" class="btn btn-filled" style="width:100%;">Continue</button>
+        <div id="modalSwitch" style="margin-top:1em;text-align:center;">
+          <!-- Switch between Login and Sign Up here -->
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
 </html>

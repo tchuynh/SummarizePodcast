@@ -70,6 +70,15 @@ def transcribe():
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+from flask import render_template
+
+@app.route('/login')
+def login():
+    return render_template('login.html')
+
+@app.route('/signup')
+def signup():
+    return render_template('signup.html')
 
 def extract_video_id(url):
     import re
@@ -78,6 +87,37 @@ def extract_video_id(url):
     if match:
         return match.group(1)
     raise ValueError('Invalid YouTube URL.')
+
+from flask import send_from_directory
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('.', 'sitemap.xml', mimetype='application/xml')
+from flask import send_from_directory
+
+@app.route('/google982f50214a0c928e.html')
+def google_verification():
+    return send_from_directory('.', 'google982f50214a0c928e.html')
+
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('.', 'robots.txt', mimetype='text/plain')
+    
+@app.route('/blog')
+def blog():
+    return render_template('blog_index.html')
+
+@app.route('/blog/how-to-get-a-youtube-transcript-instantly')
+def blog_transcript():
+    return render_template('blog_transcript.html')
+
+@app.route('/blog/5-ways-to-summarize-podcasts-with-ai')
+def blog_podcast_ai():
+    return render_template('blog_podcast_ai.html')
+
+@app.route('/blog/top-youtube-channels-for-learning')
+def blog_youtube_learning():
+    return render_template('blog_youtube_learning.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

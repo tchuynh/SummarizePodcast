@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KTNP9QJQ0Z"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-KTNP9QJQ0Z');
+    </script>
+  <meta charset="UTF-8">
+  <title>Sign Up | AI YouTube Summarizer</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { background: #f6f8fd; font-family: 'Inter',sans-serif; margin:0;}
+    .signup-container {
+      background: #fff;
+      max-width: 380px;
+      margin: 3em auto;
+      border-radius: 1.3em;
+      padding: 2em 2em 1.7em 2em;
+      box-shadow: 0 4px 24px #7b92ff17;
+      text-align: center;
+    }
+    h2 { color: #4f46e5; font-size: 2rem; margin-bottom: 1em;}
+    input[type=email], input[type=password] {
+      display: block; width: 100%; font-size: 1.08em;
+      padding: 0.95em 1em; margin-bottom: 1.1em;
+      border-radius: 0.9em; border: 1px solid #dbeafe;
+      background: #f6f8fd;
+    }
+    button { background: #4f46e5; color: #fff; font-weight: 700;
+      border-radius: 1.1em; border:none; font-size: 1.1em;
+      padding: 0.9em 0; width: 100%; cursor: pointer;}
+    a { display:block; margin:1.1em 0 0 0; color: #4f46e5; text-decoration:underline;}
+  </style>
+</head>
+<body>
+  <div class="signup-container">
+    <h2>Sign Up</h2>
+    <form onsubmit="signupSuccess(event)">
+      <input type="email" placeholder="Email" required>
+      <input type="password" placeholder="Password" required>
+      <button type="submit">Create Account</button>
+    </form>
+    <a href="/login">Already have an account? Login</a>
+    <a href="/">← Back to Home</a>
+  </div>
+  <script>
+    function signupSuccess(e) {
+      e.preventDefault();
+      document.querySelector('.signup-container').innerHTML = `
+        <h2 style="color:#22c55e;">Account created!</h2>
+        <p>You can now <a href="/login">log in</a>.</p>
+        <a href="/">← Back to Home</a>
+      `;
+    }
+  </script>
+</body>
+</html>

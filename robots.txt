@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://summarize-youtube-254596568319.us-central1.run.app/sitemap.xml
