@@ -4,19 +4,21 @@ import requests
 from openai import OpenAI
 
 from dotenv import load_dotenv
-import os
+import os, json
+
 load_dotenv()
 PROXY_CREDS = os.getenv('PROXY_CREDS')
 
 app = Flask(__name__)
 
-# Setup your proxy config
 PROXY = {
     "http": f"http://{PROXY_CREDS}@p.webshare.io:80",
     "https": f"http://{PROXY_CREDS}@p.webshare.io:80"
 }
-# Initialize OpenAI client with your API key
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+DATA_DIR = "data"
+os.makedirs(DATA_DIR, exist_ok=True)
 
 @app.route('/')
 def home():
@@ -24,7 +26,6 @@ def home():
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe():
-    # Input validation
     if not request.is_json:
         return jsonify({'error': 'Request must be JSON.'}), 400
     data = request.get_json(silent=True)
@@ -33,11 +34,25 @@ def transcribe():
     video_url = data['url']
     try:
         video_id = extract_video_id(video_url)
+        cache_path = os.path.join(DATA_DIR, f"{video_id}.json")
+
+        # Check cache first!
+        if os.path.exists(cache_path):
+            with open(cache_path, "r", encoding="utf-8") as f:
+                saved = json.load(f)
+            return jsonify(saved)
+
+        # Otherwise, fetch transcript
         transcript_data = YouTubeTranscriptApi.get_transcript(
             video_id,
-            proxies=PROXY  # Pass the proxy here
+            proxies=PROXY
         )
-        full_text = "\n".join(item['text'] for item in transcript_data)
+        # Save transcript as a list of dicts [{start, text}]
+        transcript = [
+            {'start': seg['start'], 'text': seg['text']} for seg in transcript_data
+        ]
+        # For summary, just pass plain transcript text
+        full_text = "\n".join(seg['text'] for seg in transcript)
         completion = client.chat.completions.create(
             model="gpt-4.1-mini",
             messages=[
@@ -46,15 +61,18 @@ def transcribe():
             ]
         )
         summary = completion.choices[0].message.content
-        print(summary)
-        return jsonify({'transcript': full_text, 'summary': summary})
+
+        result = {'transcript': transcript, 'summary': summary}
+        # Save to cache!
+        with open(cache_path, "w", encoding="utf-8") as f:
+            json.dump(result, f)
+
+        return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 def extract_video_id(url):
-    """Extract the video ID from a YouTube URL."""
     import re
-    # Handles various YouTube URL formats
     regex = r'(?:v=|\/)([0-9A-Za-z_-]{11}).*'
     match = re.search(regex, url)
     if match:
