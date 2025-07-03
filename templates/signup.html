@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-KTNP9QJQ0Z"></script>
-    <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-KTNP9QJQ0Z');
-    </script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script>
+    // Replace with your config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbPQgNs6ExyjvoMKJ1VAYPDsM-S1cAbL4",
+      authDomain: "summarizepodcast-1c525.firebaseapp.com",
+      projectId: "summarizepodcast-1c525",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+  </script>
   <meta charset="UTF-8">
   <title>Sign Up | AI YouTube Summarizer</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -40,23 +43,55 @@
 <body>
   <div class="signup-container">
     <h2>Sign Up</h2>
-    <form onsubmit="signupSuccess(event)">
-      <input type="email" placeholder="Email" required>
-      <input type="password" placeholder="Password" required>
-      <button type="submit">Create Account</button>
+    <form id="signupForm">
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button type="submit" id="signupBtn">Create Account</button>
     </form>
+    <div id="signupMsg"></div>
     <a href="/login">Already have an account? Login</a>
     <a href="/">← Back to Home</a>
+
+    <button type="button" id="googleSignupBtn" style="margin-top:1em; background:#fff; color:#4f46e5; border:1.5px solid #dbeafe; font-weight:600; display:flex; align-items:center; justify-content:center;">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" style="height:20px;width:20px;margin-right:10px;">
+      Sign up with Google
+    </button>
+    
   </div>
+
+  
   <script>
-    function signupSuccess(e) {
+    document.getElementById('signupForm').onsubmit = function(e) {
       e.preventDefault();
-      document.querySelector('.signup-container').innerHTML = `
-        <h2 style="color:#22c55e;">Account created!</h2>
-        <p>You can now <a href="/login">log in</a>.</p>
-        <a href="/">← Back to Home</a>
-      `;
-    }
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const signupMsg = document.getElementById('signupMsg');
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          signupMsg.innerHTML = `<span style="color:#22c55e;">Account created!</span> <br>You can now <a href="/login">log in</a>.`;
+          document.getElementById('signupForm').reset();
+        })
+        .catch((error) => {
+          signupMsg.innerHTML = `<span style="color:red;">${error.message}</span>`;
+        });
+    };
+  </script>
+
+  <script>
+    // Google Sign Up Handler
+    document.getElementById('googleSignupBtn').onclick = function() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          // User signed in!
+          window.location.href = '/'; // Redirect to homepage or dashboard
+        })
+        .catch((error) => {
+          alert("Google sign-in failed: " + error.message);
+        });
+    };
   </script>
 </body>
 </html>

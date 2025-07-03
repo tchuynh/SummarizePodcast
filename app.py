@@ -174,5 +174,56 @@ def feedback():
     with open('feedback.txt', 'a', encoding='utf-8') as f:
         f.write(f"Feedback: {feedback_text}\nEmail: {feedback_email}\n---\n")
     return ('', 204)  # No Content
+
+
+import firebase_admin
+from firebase_admin import auth as firebase_auth
+from flask import request, jsonify
+
+firebase_admin.initialize_app()  # Uses ADC
+
+import functools
+
+def authenticate_token(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return jsonify({"error": "Missing token"}), 401
+        parts = auth_header.split()
+        if len(parts) != 2 or parts[0] != "Bearer":
+            return jsonify({"error": "Invalid token format"}), 401
+        token = parts[1]
+        try:
+            decoded = firebase_auth.verify_id_token(token)
+        except Exception as e:
+            return jsonify({"error": "Invalid or expired token", "details": str(e)}), 403
+        request.uid = decoded.get('uid')
+        return func(*args, **kwargs)
+    return wrapper
+
+
+
+@app.route('/save_summary', methods=['POST'])
+@authenticate_token
+def save_summary():
+    user_id = request.uid
+    data = request.get_json()
+    summary_text = data.get('summary')
+    doc_ref = firestore_client.collection('users').document(user_id).collection('history').document()
+    doc_ref.set({
+        'summary': summary_text,
+        'created_at': firestore.SERVER_TIMESTAMP
+    })
+    return {"status": "ok", "id": doc_ref.id}, 200
+
+@app.route('/history', methods=['GET'])
+@authenticate_token
+def get_history():
+    user_id = request.uid
+    docs = firestore_client.collection('users').document(user_id).collection('history').stream()
+    history = [doc.to_dict() for doc in docs]
+    return jsonify(history), 200
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,6 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script>
+    // Replace with your config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbPQgNs6ExyjvoMKJ1VAYPDsM-S1cAbL4",
+      authDomain: "summarizepodcast-1c525.firebaseapp.com",
+      projectId: "summarizepodcast-1c525",
+      // ...other config fields
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+  </script>
     <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KTNP9QJQ0Z"></script>
   <script>
@@ -642,6 +656,7 @@
           <a href="/blog" class="btn btn-outline blog-btn">Blog</a>
           <button class="btn btn-outline login-btn">Login</button>
           <button class="btn btn-filled signup-btn">Sign Up</button>
+
         </div>
       </div>
       <!-- Second Row: Search bar centered -->
@@ -725,6 +740,10 @@
       <div id="feedbackMsg" style="margin-top:0.7em; color:#4f46e5; font-weight:600;"></div>
     </form>
   </div>
+
+
+
+
 
   <button id="feedbackFloatBtn" style="
     position:fixed; bottom:32px; right:32px; z-index:9999;
@@ -1076,8 +1095,41 @@
     };
 
 
-  </script>
 
+
+
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        console.log("User is logged in:", user.uid);
+        // Show logged-in UI
+      } else {
+        console.log("No user is logged in");
+        // Show login form
+      }
+    });
+
+    async function callApi(endpoint, data) {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Not authenticated!");
+        return;
+      }
+      const token = await user.getIdToken();
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error("Server error " + res.status);
+      return res.json();
+    }
+
+
+  </script>
 
 
 
