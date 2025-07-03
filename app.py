@@ -56,11 +56,20 @@ def transcribe():
         completion = client.chat.completions.create(
             model="gpt-4.1-mini",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant. Summarize this podcast:"},
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a helpful assistant that summarizes podcasts. "
+                        "Return your summary as clean HTML: use <h2> for topics, <ul><li> for bullet points, and <b> for key terms. "
+                        "No raw Markdown, no extra asterisks. No introductory or concluding paragraph."
+                    )
+                },
                 {"role": "user", "content": full_text}
             ]
         )
         summary = completion.choices[0].message.content
+
+
 
         result = {'transcript': transcript, 'summary': summary}
         # Save to cache!
@@ -70,6 +79,43 @@ def transcribe():
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/summarize_transcript', methods=['POST'])
+def summarize_transcript():
+    if not request.is_json:
+        return jsonify({'error': 'Request must be JSON.'}), 400
+    data = request.get_json(silent=True)
+    transcript = data.get('transcript')
+    if not transcript or not isinstance(transcript, list):
+        return jsonify({'error': 'No transcript provided.'}), 400
+
+    # Join the transcript into plain text (use your format!)
+    full_text = "\n".join(
+        seg['text'] if isinstance(seg, dict) and 'text' in seg else str(seg)
+        for seg in transcript
+    )
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a helpful assistant that summarizes podcasts. "
+                        "Return your summary as clean HTML: use <h2> for topics, <ul><li> for bullet points, and <b> for key terms. "
+                        "No raw Markdown, no extra asterisks. No introductory or concluding paragraph."
+                    )
+                },
+                {"role": "user", "content": full_text}
+            ]
+        )
+        summary = completion.choices[0].message.content
+        return jsonify({'summary': summary})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+
 from flask import render_template
 
 @app.route('/login')
@@ -119,5 +165,14 @@ def blog_podcast_ai():
 def blog_youtube_learning():
     return render_template('blog_youtube_learning.html')
 
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    data = request.get_json()
+    feedback_text = data.get('text', '').strip()
+    feedback_email = data.get('email', '').strip()
+    # Save to a file or database. Here, we'll append to a text file.
+    with open('feedback.txt', 'a', encoding='utf-8') as f:
+        f.write(f"Feedback: {feedback_text}\nEmail: {feedback_email}\n---\n")
+    return ('', 204)  # No Content
 if __name__ == '__main__':
     app.run(debug=True)

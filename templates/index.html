@@ -651,6 +651,8 @@
                placeholder="Paste YouTube URL here..."
                style="min-width: 480px; max-width: 700px; width: 50vw; font-size:1.18em; padding: 0.9em 1em;" />
         <button id="fetchBtn" class="btn" style="margin-left:0.8em; font-size:1.1em; padding: 0.7em 2em;">Summarize</button>
+        <button id="feedbackBarBtn" class="btn btn-outline" style="margin-left:0.8em;">Feedback</button>
+
       </div>
     </div>
   </header>
@@ -689,6 +691,7 @@
         <div class="header-row">
           <h2>Summary</h2>
           <div>
+            <button id="regenerateSummaryBtn" class="btn btn-outline" style="margin-right: 0.5em;">Regenerate Summary</button>
             <button id="copySummaryBtn" class="btn btn-copy">Copy</button>
             <button id="downloadSummaryBtn" class="btn btn-download">Download</button>
           </div>
@@ -700,8 +703,37 @@
     </div>
   </div>
   
-  
+  <div class="card feedback-card" style="
+    margin-top:2.2em; 
+    max-width:600px;
+    border: 2.5px solid #4f46e5;           /* Your site's primary color */
+    background: #eef2ff;                    /* A very light indigo (matches summary cards) */
+    box-shadow: 0 6px 28px #4f46e533;">
+    <h3 style="margin-top:0; color:#4f46e5;">💬 We want your feedback!</h3>
+    <p style="font-size:1.05em; color:#2b3487; margin-top:0;">Help us improve! What feature, fix, or idea would make this tool more useful for you?</p>
+    <form id="feedbackForm">
+      <textarea id="feedbackText" rows="3" style="
+        width:100%;padding:0.85em; border-radius:0.7em; 
+        border:1.5px solid #d1d5fa; background:#fff;" 
+        placeholder="Your feedback, suggestions, or ideas..."></textarea>
+      <input id="feedbackEmail" type="email" style="
+        width:100%;margin-top:0.7em;padding:0.85em; border-radius:0.7em; 
+        border:1.5px solid #d1d5fa;" 
+        placeholder="(Optional) Your email for a reply" />
+      <button class="btn" type="submit" style="
+        margin-top:1.2em; background:#4f46e5;">Send Feedback</button>
+      <div id="feedbackMsg" style="margin-top:0.7em; color:#4f46e5; font-weight:600;"></div>
+    </form>
+  </div>
 
+  <button id="feedbackFloatBtn" style="
+    position:fixed; bottom:32px; right:32px; z-index:9999;
+    background:#4f46e5; color:#fff; font-size:1.13em;
+    border:none; border-radius:2em; padding:1em 1.7em;
+    box-shadow:0 2px 12px #4f46e511; cursor:pointer;">
+    💬 Feedback
+  </button>
+  
 
   <script>
     const fetchBtn = document.getElementById('fetchBtn');
@@ -826,6 +858,7 @@
       }
     }
 
+
     function renderSummary(summary) {
       let md = typeof summary === 'string' ? summary : '';
       const lines = md.split(/\r?\n/).filter(line => line.trim() !== '');
@@ -901,6 +934,8 @@
           body:JSON.stringify({ url })
         });
         const { summary, transcript, error } = await res.json();
+        window.rawTranscriptArray = transcript;  // Save full transcript array globally
+
         if (error) throw new Error(error);
 
         transcriptParagraphs = paragraphizeTranscript(transcript, 40, 400);
@@ -971,25 +1006,82 @@
     document.querySelector('.login-btn').onclick = function() { window.location = '/login'; }
     document.querySelector('.signup-btn').onclick = function() { window.location = '/signup'; }
 
+    const feedbackForm = document.getElementById('feedbackForm');
+    const feedbackMsg = document.getElementById('feedbackMsg');
+    feedbackForm.onsubmit = async function(e) {
+      e.preventDefault();
+      feedbackMsg.textContent = "Sending…";
+      try {
+        const res = await fetch('/feedback', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            text: document.getElementById('feedbackText').value,
+            email: document.getElementById('feedbackEmail').value
+          })
+        });
+        if (res.ok) {
+          feedbackMsg.textContent = "Thanks for your feedback!";
+          feedbackForm.reset();
+        } else {
+          feedbackMsg.textContent = "Sorry, there was a problem. Please try again.";
+        }
+      } catch {
+        feedbackMsg.textContent = "Sorry, there was a problem. Please try again.";
+      }
+    };
+    // Floating feedback button click
+    document.getElementById('feedbackFloatBtn').onclick = function() {
+      // Scroll smoothly to the feedback form on the page
+      const feedbackCard = document.querySelector('.feedback-card');
+      if (feedbackCard) {
+        feedbackCard.scrollIntoView({behavior: 'smooth', block: 'center'});
+        feedbackCard.style.boxShadow = "0 0 0 4px #a5b4fc, 0 8px 32px #4f46e522";
+        setTimeout(() => feedbackCard.style.boxShadow = "", 1800);
+      }
+    };
+    function scrollToFeedbackCard() {
+      const feedbackCard = document.querySelector('.feedback-card');
+      if (!feedbackCard) { alert('Feedback card not found!'); return; }
+      console.log('Scrolling to feedback card...');
+      feedbackCard.scrollIntoView({behavior: 'smooth', block: 'center'});
+      feedbackCard.style.boxShadow = "0 0 0 4px #a5b4fc, 0 8px 32px #4f46e522";
+      setTimeout(() => feedbackCard.style.boxShadow = "", 1800);
+    }
 
+
+    document.getElementById('feedbackBarBtn').onclick = scrollToFeedbackCard;
+    document.getElementById('feedbackFloatBtn').onclick = scrollToFeedbackCard;
+
+    const regenerateBtn = document.getElementById('regenerateSummaryBtn');
+    regenerateBtn.onclick = async function() {
+      if (!window.rawTranscriptArray || !Array.isArray(window.rawTranscriptArray)) {
+        alert("Transcript not loaded, can't regenerate summary!");
+        return;
+      }
+      sumOut.innerHTML = `<div class="loading">Regenerating summary…</div>`;
+      try {
+        const res = await fetch('/summarize_transcript', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ transcript: window.rawTranscriptArray })
+        });
+        const { summary, error } = await res.json();
+        if (error) throw new Error(error);
+        summaryData = summary;
+        renderSummary(summaryData);
+      } catch(e) {
+        sumOut.innerHTML = `<div style="color:#d00;">Error: ${e.message}</div>`;
+      }
+    };
 
 
   </script>
 
-    <!-- Modal Overlay -->
-  <div id="authModal" class="modal-overlay" style="display:none;">
-    <div class="modal-content">
-      <button class="close-modal" onclick="closeModal()">&times;</button>
-      <h2 id="modalTitle">Login</h2>
-      <form id="authForm" onsubmit="return false;">
-        <input type="email" placeholder="Email" required style="margin-bottom: 1em;"/>
-        <input type="password" placeholder="Password" required style="margin-bottom: 1em;"/>
-        <button type="submit" class="btn btn-filled" style="width:100%;">Continue</button>
-        <div id="modalSwitch" style="margin-top:1em;text-align:center;">
-          <!-- Switch between Login and Sign Up here -->
-        </div>
-      </form>
-    </div>
-  </div>
+
+
+
+
+
 </body>
 </html>
