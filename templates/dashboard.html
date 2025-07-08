@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Dashboard | AI YouTube Summarizer</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <style>
+    body { background: #f6f8fd; font-family: 'Inter', sans-serif; margin: 0; color: #222;}
+    .dashboard-container {
+      max-width: 700px;
+      margin: 3em auto 2em auto;
+      background: #fff;
+      border-radius: 1.3em;
+      padding: 2em 2.4em 2em 2.4em;
+      box-shadow: 0 4px 24px #7b92ff17;
+    }
+    h2 { color: #4f46e5; }
+    .history-list { margin-top:2em;}
+    .history-item {
+      background: #eef2ff;
+      border-radius: 1em;
+      padding: 1em 1.3em;
+      margin-bottom: 1.2em;
+      box-shadow: 0 1.5px 10px #4f46e511;
+      font-size: 1.09em;
+    }
+    .logout-btn {
+      float: right;
+      background: #fff;
+      color: #4f46e5;
+      border: 2px solid #4f46e5;
+      font-weight: 600;
+      border-radius: 1em;
+      padding: 0.5em 1.4em;
+      margin-top: -1em;
+      margin-bottom: 2em;
+      cursor: pointer;
+      transition: background .14s, color .14s;
+    }
+    .logout-btn:hover {
+      background: #4f46e5;
+      color: #fff;
+    }
+    .no-history {
+      color: #7b8094; font-style: italic; margin-top: 2em; text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <button class="logout-btn" id="logoutBtn">Log Out</button>
+    <h2>Welcome, <span id="userEmail"></span>!</h2>
+    <div class="history-list" id="historyList">
+      <div class="no-history" id="noHistoryMsg">Loading history...</div>
+    </div>
+    <a href="/" style="display:block; margin-top:2em; color:#4f46e5;">← Back to Home</a>
+  </div>
+  <script>
+    // --- Firebase Auth Init ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBbPQgNs6ExyjvoMKJ1VAYPDsM-S1cAbL4",
+      authDomain: "summarizepodcast-1c525.firebaseapp.com",
+      projectId: "summarizepodcast-1c525",
+      // ...other config fields
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // --- Auth Guard: Redirect if not logged in ---
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        window.location.href = "/login";
+      } else {
+        document.getElementById("userEmail").textContent = user.email || user.displayName || "User";
+        loadHistory(user);
+      }
+    });
+
+    // --- Logout ---
+    document.getElementById("logoutBtn").onclick = function() {
+      auth.signOut().then(() => window.location.href = "/");
+    };
+
+    // --- Load User's History ---
+    async function loadHistory(user) {
+      const historyList = document.getElementById("historyList");
+      const noHistoryMsg = document.getElementById("noHistoryMsg");
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch("/history", {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        const data = await res.json();
+
+        // Example response: { history: [{url, summary, created_at}, ...] }
+        if (!data.history || data.history.length === 0) {
+          noHistoryMsg.textContent = "No history yet. Summarize a video to get started!";
+          return;
+        }
+        noHistoryMsg.style.display = "none";
+        historyList.innerHTML = data.history.map(item => `
+          <div class="history-item">
+            <div><b>YouTube URL:</b> <a href="${item.url}" target="_blank">${item.url}</a></div>
+            <div style="margin-top:0.4em;"><b>Summary:</b> ${item.summary}</div>
+            <div style="margin-top:0.4em; font-size:0.97em; color:#888;">${item.created_at ? `Summarized on: ${new Date(item.created_at).toLocaleString()}` : ""}</div>
+          </div>
+        `).join("");
+      } catch (e) {
+        noHistoryMsg.textContent = "Failed to load history.";
+      }
+    }
+  </script>
+</body>
+</html>

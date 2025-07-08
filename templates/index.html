@@ -433,7 +433,7 @@
       justify-content: center;
       align-items: center;
     }
-    .btn-outline {
+    .btn-outline:hover {
       background: transparent;
       border: 2px solid var(--primary);
       color: var(--primary);
@@ -441,7 +441,7 @@
       padding: 0.62rem 1.7rem;
       transition: background .15s, color .15s, border .15s;
     }
-    .btn-outline:hover {
+    .btn-outline {
       background: var(--primary);
       color: #fff;
     }
@@ -652,10 +652,21 @@
           </span>
           <span class="brand-text" style="margin-left: 0.7em; font-size:1.7em; font-weight:600;">AI YouTube Summarizer</span>
         </div>
-        <div class="header-actions" style="display:flex; align-items:center; gap:0.9em;">
+        <!-- <div class="header-actions" style="display:flex; align-items:center; gap:0.9em;">
           <a href="/blog" class="btn btn-outline blog-btn">Blog</a>
           <button class="btn btn-outline login-btn">Login</button>
           <button class="btn btn-filled signup-btn">Sign Up</button>
+        </div> -->
+        <!-- Header -->
+        <div class="header-actions" style="display:flex; align-items:center; gap:0.9em;">
+          <a href="/blog" class="btn btn-outline blog-btn">Blog</a>
+          <button class="btn btn-outline" id="loginBtn">Login</button>
+          <button class="btn btn-outline" id="signupBtn">Sign Up</button>
+          <!-- ...other buttons... -->
+          <a href="/dashboard" class="btn btn-outline" id="dashboardBtn" style="display:none;">Dashboard</a>
+          <button id="accountBtn" class="btn btn-outline" style="display:none;">
+            <span>Account</span>
+          </button>
 
         </div>
       </div>
@@ -665,7 +676,7 @@
                value="https://www.youtube.com/watch?v=FASMejN_5gs"
                placeholder="Paste YouTube URL here..."
                style="min-width: 480px; max-width: 700px; width: 50vw; font-size:1.18em; padding: 0.9em 1em;" />
-        <button id="fetchBtn" class="btn" style="margin-left:0.8em; font-size:1.1em; padding: 0.7em 2em;">Summarize</button>
+        <button id="fetchBtn" class="btn btn-outline" style="margin-left:0.8em; font-size:1.1em; padding: 0.7em 2em;">Summarize</button>
         <button id="feedbackBarBtn" class="btn btn-outline" style="margin-left:0.8em;">Feedback</button>
 
       </div>
@@ -691,8 +702,8 @@
             <button id="toggleTranscriptTimestamps" class="btn-toggle active" title="Show/hide timestamps">Timestamps</button>
           </div>
           <div>
-            <button id="copyTranscriptBtn" class="btn btn-copy">Copy</button>
-            <button id="downloadTranscriptBtn" class="btn btn-download">Download</button>
+            <button id="copyTranscriptBtn" class="btn btn-outline">Copy</button>
+            <button id="downloadTranscriptBtn" class="btn btn-outline">Download</button>
           </div>
         </div>
         <div id="transcriptOutput" class="transcript-section" style="overflow-y:auto;">
@@ -707,8 +718,8 @@
           <h2>Summary</h2>
           <div>
             <button id="regenerateSummaryBtn" class="btn btn-outline" style="margin-right: 0.5em;">Regenerate Summary</button>
-            <button id="copySummaryBtn" class="btn btn-copy">Copy</button>
-            <button id="downloadSummaryBtn" class="btn btn-download">Download</button>
+            <button id="copySummaryBtn" class="btn btn-outline">Copy</button>
+            <button id="downloadSummaryBtn" class="btn btn-outline">Download</button>
           </div>
         </div>
         <div id="summaryOutput" class="summary-body markdown-body" style="overflow-y:auto; flex:1;">
@@ -1021,34 +1032,9 @@
 
 
 
-    // Attach events to your buttons
-    document.querySelector('.login-btn').onclick = function() { window.location = '/login'; }
-    document.querySelector('.signup-btn').onclick = function() { window.location = '/signup'; }
 
-    const feedbackForm = document.getElementById('feedbackForm');
-    const feedbackMsg = document.getElementById('feedbackMsg');
-    feedbackForm.onsubmit = async function(e) {
-      e.preventDefault();
-      feedbackMsg.textContent = "Sending…";
-      try {
-        const res = await fetch('/feedback', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({
-            text: document.getElementById('feedbackText').value,
-            email: document.getElementById('feedbackEmail').value
-          })
-        });
-        if (res.ok) {
-          feedbackMsg.textContent = "Thanks for your feedback!";
-          feedbackForm.reset();
-        } else {
-          feedbackMsg.textContent = "Sorry, there was a problem. Please try again.";
-        }
-      } catch {
-        feedbackMsg.textContent = "Sorry, there was a problem. Please try again.";
-      }
-    };
+
+
     // Floating feedback button click
     document.getElementById('feedbackFloatBtn').onclick = function() {
       // Scroll smoothly to the feedback form on the page
@@ -1059,18 +1045,7 @@
         setTimeout(() => feedbackCard.style.boxShadow = "", 1800);
       }
     };
-    function scrollToFeedbackCard() {
-      const feedbackCard = document.querySelector('.feedback-card');
-      if (!feedbackCard) { alert('Feedback card not found!'); return; }
-      console.log('Scrolling to feedback card...');
-      feedbackCard.scrollIntoView({behavior: 'smooth', block: 'center'});
-      feedbackCard.style.boxShadow = "0 0 0 4px #a5b4fc, 0 8px 32px #4f46e522";
-      setTimeout(() => feedbackCard.style.boxShadow = "", 1800);
-    }
-
-
-    document.getElementById('feedbackBarBtn').onclick = scrollToFeedbackCard;
-    document.getElementById('feedbackFloatBtn').onclick = scrollToFeedbackCard;
+    
 
     const regenerateBtn = document.getElementById('regenerateSummaryBtn');
     regenerateBtn.onclick = async function() {
@@ -1093,9 +1068,6 @@
         sumOut.innerHTML = `<div style="color:#d00;">Error: ${e.message}</div>`;
       }
     };
-
-
-
 
 
 
@@ -1132,7 +1104,91 @@
   </script>
 
 
+  <!-- At bottom of your HTML, just before </body>: -->
+  <script>
+    function updateHeaderForAuth(user) {
+      const loginBtn = document.getElementById('loginBtn');
+      const signupBtn = document.getElementById('signupBtn');
+      const dashboardBtn = document.getElementById('dashboardBtn');
+      const accountBtn = document.getElementById('accountBtn');
+      if (user) {
+        if (loginBtn) loginBtn.style.display = "none";
+        if (signupBtn) signupBtn.style.display = "none";
+        if (dashboardBtn) dashboardBtn.style.display = "";
+        if (accountBtn) accountBtn.style.display = "";
+        if (user.photoURL && accountBtn) {
+          accountBtn.querySelector('img').src = user.photoURL;
+        }
+      } else {
+        if (loginBtn) loginBtn.style.display = "";
+        if (signupBtn) signupBtn.style.display = "";
+        if (dashboardBtn) dashboardBtn.style.display = "none";
+        if (accountBtn) accountBtn.style.display = "none";
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Attach navigation handlers
+      const loginBtn = document.getElementById('loginBtn');
+      if (loginBtn) loginBtn.onclick = function() { window.location.href = '/login'; };
+    
+      const signupBtn = document.getElementById('signupBtn');
+      if (signupBtn) signupBtn.onclick = function() { window.location.href = '/signup'; };
+    
+      const accountBtn = document.getElementById('accountBtn');
+      if (accountBtn) accountBtn.onclick = function() {
+        if (confirm("Log out of your account?")) {
+          auth.signOut();
+        }
+      };
+    
+      // Firebase auth state change
+      auth.onAuthStateChanged(function(user) {
+        updateHeaderForAuth(user);
+      });
+    });
+  </script>
+  <script>
+    function scrollToFeedbackCard() {
+      const feedbackCard = document.querySelector('.feedback-card');
+      if (!feedbackCard) { alert('Feedback card not found!'); return; }
+      feedbackCard.scrollIntoView({behavior: 'smooth', block: 'center'});
+      feedbackCard.style.boxShadow = "0 0 0 4px #a5b4fc, 0 8px 32px #4f46e522";
+      setTimeout(() => feedbackCard.style.boxShadow = "", 1800);
+    }
+    
+    document.getElementById('feedbackBarBtn').onclick = scrollToFeedbackCard;
+    document.getElementById('feedbackFloatBtn').onclick = scrollToFeedbackCard;
+    
+    const feedbackForm = document.getElementById('feedbackForm');
+    const feedbackMsg = document.getElementById('feedbackMsg');
 
+    feedbackForm.onsubmit = async function(e) {
+      e.preventDefault();
+      feedbackMsg.textContent = "Sending…";
+      try {
+        const res = await fetch('/feedback', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            text: document.getElementById('feedbackText').value,
+            email: document.getElementById('feedbackEmail').value
+          })
+        });
+        if (res.ok) {
+          feedbackMsg.textContent = "Thanks for your feedback!";
+          feedbackForm.reset();
+        } else {
+          feedbackMsg.textContent = "Sorry, there was a problem. Please try again.";
+        }
+      } catch {
+        feedbackMsg.textContent = "Sorry, there was a problem. Please try again.";
+      }
+    };
+    // Attach events to your buttons
+    // document.querySelector('.login-btn').onclick = function() { window.location = '/login'; }
+    // document.querySelector('.signup-btn').onclick = function() { window.location = '/signup'; }
+  </script>
 
 
 </body>
